@@ -1,0 +1,36 @@
+{$DOMAIN} {
+    # Ballerine Backoffice
+    handle /dashboard/* {
+        reverse_proxy ballerine:5137
+    }
+
+    # Ballerine API
+    handle /api/v1/* {
+        reverse_proxy ballerine:3000
+    }
+
+    # ZITADEL Login UI
+    handle /ui/v2/login/* {
+        reverse_proxy login-ui:3000
+    }
+
+    # MinIO Data API
+    handle /minio-api/* {
+        uri strip_prefix /minio-api
+        reverse_proxy minio:9000
+    }
+
+    # MinIO Web Console
+    handle /minio-console/* {
+        reverse_proxy minio:9001
+    }
+
+    # ZITADEL Core (Fallback for everything else)
+    handle {
+        reverse_proxy zitadel:8080 {
+            transport http {
+                versions h2c
+            }
+        }
+    }
+}
