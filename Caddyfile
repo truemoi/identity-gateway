@@ -1,14 +1,4 @@
 {$DOMAIN} {
-    # Ballerine Backoffice
-    handle /dashboard/* {
-        reverse_proxy ballerine:5137
-    }
-
-    # Ballerine API
-    handle /api/v1/* {
-        reverse_proxy ballerine:3000
-    }
-
     # ZITADEL Login UI
     handle /ui/v2/login/* {
         reverse_proxy login-ui:3000

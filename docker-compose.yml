@@ -11,7 +11,7 @@ volumes:
   caddy_config:
 
 services:
-  # 1. PostgreSQL (Memory Optimized for 4GB VPS)
+  # 1. PostgreSQL 
   db:
     image: postgres:17-alpine
     container_name: shared-db
@@ -26,16 +26,13 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: postgres
     command: >
-      postgres
-      -c shared_buffers=256MB
-      -c work_mem=16MB
-      -c max_connections=100
+      postgres -c shared_buffers=256MB -c work_mem=16MB -c max_connections=100
     deploy:
       resources:
         limits:
           memory: 1G
 
-  # 2. MinIO (S3-Compatible Storage)
+  # 2. MinIO
   minio:
     image: quay.io/minio/minio:latest
     container_name: local-s3
@@ -55,7 +52,7 @@ services:
         limits:
           memory: 512M
 
-  # 3. ZITADEL (IAM & OAuth2)
+  # 3. ZITADEL Core
   zitadel:
     image: ghcr.io/zitadel/zitadel:latest
     container_name: zitadel-api
@@ -91,31 +88,7 @@ services:
         limits:
           memory: 256M
 
-  # 5. Ballerine (KYC/KYB Orchestrator)
-  ballerine:
-    image: ghcr.io/ballerine-io/ballerine:latest
-    container_name: ballerine-orchestrator
-    restart: always
-    networks:
-      - gateway-network
-    depends_on:
-      - db
-      - minio
-    environment:
-      DB_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/ballerine?sslmode=disable"
-      PORT: 3000
-      STORAGE_PROVIDER: s3
-      AWS_S3_BUCKET_NAME: "ballerine-kyc"
-      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
-      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
-      AWS_S3_ENDPOINT: "http://minio:9000"
-      AWS_S3_FORCE_PATH_STYLE: "true"
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-
-  # 6. Caddy Edge Proxy (Auto-SSL & Routing)
+  # 5. Caddy Edge Proxy
   caddy:
     image: caddy:2-alpine
     container_name: edge-proxy
@@ -127,7 +100,6 @@ services:
       - gateway-network
     depends_on:
       - zitadel
-      - ballerine
       - minio
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
