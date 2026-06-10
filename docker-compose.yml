@@ -61,7 +61,7 @@ services:
       ZITADEL_EXTERNALPORT: "443"
     command: start-from-init --masterkey "${ZITADEL_MASTERKEY}" --tlsMode disabled
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:18080:8080"
 
   # 4. ZITADEL Login UI
   login-ui:
